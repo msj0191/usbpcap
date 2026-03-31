@@ -2076,13 +2076,44 @@ int __cdecl main(int argc, CHAR **argv)
                            GENERIC_READ | GENERIC_WRITE,
                            FILE_SHARE_READ | FILE_SHARE_WRITE,
                            NULL, OPEN_EXISTING, 0, NULL);
-        if (hDev == INVALID_HANDLE_VALUE)
-        {
-            fprintf(stderr, "Cannot open device %s (error %lu)\n",
-                    data.device, GetLastError());
-            adcusbLogClose();
-            return -1;
-        }
+		if (hDev == INVALID_HANDLE_VALUE)
+		{
+			DWORD dwErr;
+			int i;
+
+			dwErr = GetLastError();
+			fprintf(stderr, "Cannot open device %s (error %lu)\n", data.device, dwErr);
+			switch (dwErr)
+			{
+			case ERROR_FILE_NOT_FOUND:
+				fprintf(stderr, "  Device '%s' does not exist.\n", data.device);
+				fprintf(stderr, "  Check driver status: sc query adcusb\n");
+				fprintf(stderr, "  If driver is running, check available devices:\n");
+				filters_initialize();
+				if (adcusbFilters[0] != NULL)
+				{
+					fprintf(stderr, "  Available devices:\n");
+					for (i = 0; adcusbFilters[i] != NULL; i++)
+						fprintf(stderr, "    %s\n", adcusbFilters[i]->device);
+				}
+				else
+				{
+					fprintf(stderr, "  No adcusb devices found. Try:\n");
+					fprintf(stderr, "    1. Verify driver: sc query adcusb\n");
+					fprintf(stderr, "    2. Reboot after installing UpperFilter\n");
+				}
+				filters_free();
+				break;
+			case ERROR_ACCESS_DENIED:
+				fprintf(stderr, "  Access denied. Run this command as Administrator.\n");
+				break;
+			default:
+				fprintf(stderr, "  Unexpected error. Check driver installation.\n");
+				break;
+			}
+			adcusbLogClose();
+			return -1;
+		}
 
         ok = (block_hwid_str != NULL) ? adcusbAddBlockRule(hDev, wPattern)
                                       : adcusbRemoveBlockRule(hDev, wPattern);
@@ -2121,13 +2152,44 @@ int __cdecl main(int argc, CHAR **argv)
                            GENERIC_READ | GENERIC_WRITE,
                            FILE_SHARE_READ | FILE_SHARE_WRITE,
                            NULL, OPEN_EXISTING, 0, NULL);
-        if (hDev == INVALID_HANDLE_VALUE)
-        {
-            fprintf(stderr, "Cannot open device %s (error %lu)\n",
-                    data.device, GetLastError());
-            adcusbLogClose();
-            return -1;
-        }
+		if (hDev == INVALID_HANDLE_VALUE)
+		{
+			DWORD dwErr;
+			int i;
+
+			dwErr = GetLastError();
+			fprintf(stderr, "Cannot open device %s (error %lu)\n", data.device, dwErr);
+			switch (dwErr)
+			{
+			case ERROR_FILE_NOT_FOUND:
+				fprintf(stderr, "  Device '%s' does not exist.\n", data.device);
+				fprintf(stderr, "  Check driver status: sc query adcusb\n");
+				fprintf(stderr, "  If driver is running, check available devices:\n");
+				filters_initialize();
+				if (adcusbFilters[0] != NULL)
+				{
+					fprintf(stderr, "  Available devices:\n");
+					for (i = 0; adcusbFilters[i] != NULL; i++)
+						fprintf(stderr, "    %s\n", adcusbFilters[i]->device);
+				}
+				else
+				{
+					fprintf(stderr, "  No adcusb devices found. Try:\n");
+					fprintf(stderr, "    1. Verify driver: sc query adcusb\n");
+					fprintf(stderr, "    2. Reboot after installing UpperFilter\n");
+				}
+				filters_free();
+				break;
+			case ERROR_ACCESS_DENIED:
+				fprintf(stderr, "  Access denied. Run this command as Administrator.\n");
+				break;
+			default:
+				fprintf(stderr, "  Unexpected error. Check driver installation.\n");
+				break;
+			}
+			adcusbLogClose();
+			return -1;
+		}
 
         memset(&response, 0, sizeof(response));
         if (adcusbListBlockRules(hDev, &response))

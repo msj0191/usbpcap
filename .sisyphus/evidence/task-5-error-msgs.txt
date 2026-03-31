@@ -1,0 +1,13 @@
+grep -n "ERROR_FILE_NOT_FOUND\|ERROR_ACCESS_DENIED\|sc query adcusb\|Administrator" adcusbCMD/cmd.c
+1491:	if (ulError == ERROR_ACCESS_DENIED)
+1493:		adcusbLogError("Access denied. Please run as Administrator", ulError);
+2088:			case ERROR_FILE_NOT_FOUND:
+2090:				fprintf(stderr, "  Check driver status: sc query adcusb\n");
+2102:				fprintf(stderr, "    1. Verify driver: sc query adcusb\n");
+2107:			case ERROR_ACCESS_DENIED:
+2108:				fprintf(stderr, "  Access denied. Run this command as Administrator.\n");
+2164:			case ERROR_FILE_NOT_FOUND:
+2166:				fprintf(stderr, "  Check driver status: sc query adcusb\n");
+2178:				fprintf(stderr, "    1. Verify driver: sc query adcusb\n");
+2183:			case ERROR_ACCESS_DENIED:
+2184:				fprintf(stderr, "  Access denied. Run this command as Administrator.\n");
