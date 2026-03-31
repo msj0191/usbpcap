@@ -1790,6 +1790,10 @@ static void print_help(void)
 	   "    Remove HardwareID substring pattern from vmusb block list.\n"
 	   "  Example: adusbcli.exe -d \\\\.\\adcusb1 -allow-hwid Vid_0E0F&Pid_0001\n"
 	   "    Requires -d <device>.\n"
+	   "  --list-block-rules\n"
+	   "    List all active HardwareID block rules.\n"
+	   "    Requires -d <device>.\n"
+	   "  Example: adusbcli.exe -d \\\\.\\adcusb1 --list-block-rules\n"
 	   "  -init\n"
 	   "    Initialize adcusb driver (register as vmusb UpperFilter).\n"
 	   "  Example: adusbcli.exe -init\n"
@@ -2063,9 +2067,36 @@ int __cdecl main(int argc, CHAR **argv)
 
         if (data.device == NULL)
         {
-            fprintf(stderr, "Device not specified. Use -d <device>.\n");
-            adcusbLogClose();
-            return -1;
+            int nDev;
+            int j;
+
+            filters_initialize();
+            for (nDev = 0; adcusbFilters[nDev] != NULL; nDev++)
+                ; /* count devices */
+            if (nDev == 0)
+            {
+                fprintf(stderr, "No adcusb filter devices found.\n");
+                fprintf(stderr, "  Check driver status: sc query adcusb\n");
+                fprintf(stderr, "  Ensure UpperFilter is registered and system rebooted.\n");
+                filters_free();
+                adcusbLogClose();
+                return -1;
+            }
+            else if (nDev == 1)
+            {
+                data.device = _strdup(adcusbFilters[0]->device);
+                fprintf(stderr, "Auto-selected device: %s\n", data.device);
+                filters_free();
+            }
+            else
+            {
+                fprintf(stderr, "Multiple devices found. Specify one with -d:\n");
+                for (j = 0; adcusbFilters[j] != NULL; j++)
+                    fprintf(stderr, "  %s\n", adcusbFilters[j]->device);
+                filters_free();
+                adcusbLogClose();
+                return -1;
+            }
         }
 
         pattern_str = (block_hwid_str != NULL) ? block_hwid_str : allow_hwid_str;
@@ -2143,9 +2174,36 @@ int __cdecl main(int argc, CHAR **argv)
 
         if (data.device == NULL)
         {
-            fprintf(stderr, "Device not specified. Use -d <device>.\n");
-            adcusbLogClose();
-            return -1;
+            int nDev;
+            int j;
+
+            filters_initialize();
+            for (nDev = 0; adcusbFilters[nDev] != NULL; nDev++)
+                ; /* count devices */
+            if (nDev == 0)
+            {
+                fprintf(stderr, "No adcusb filter devices found.\n");
+                fprintf(stderr, "  Check driver status: sc query adcusb\n");
+                fprintf(stderr, "  Ensure UpperFilter is registered and system rebooted.\n");
+                filters_free();
+                adcusbLogClose();
+                return -1;
+            }
+            else if (nDev == 1)
+            {
+                data.device = _strdup(adcusbFilters[0]->device);
+                fprintf(stderr, "Auto-selected device: %s\n", data.device);
+                filters_free();
+            }
+            else
+            {
+                fprintf(stderr, "Multiple devices found. Specify one with -d:\n");
+                for (j = 0; adcusbFilters[j] != NULL; j++)
+                    fprintf(stderr, "  %s\n", adcusbFilters[j]->device);
+                filters_free();
+                adcusbLogClose();
+                return -1;
+            }
         }
 
         hDev = CreateFileA(data.device,
